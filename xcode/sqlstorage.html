@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+            <title>jQuery Mobile Web App</title>
+            <meta name="viewport" content="user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, width=device-width, height=device-height, target-densitydpi=device-dpi"/>
+            
+            <link href="css/jquery.mobile-1.0.min.css" rel="stylesheet" type="text/css"/>
+            <script src="js/jquery-1.6.4.min.js" type="text/javascript"></script>
+            <script src="js/jquery.mobile-1.0.min.js" type="text/javascript"></script>
+            <script type="text/javascript" src="cordova.js"></script>
+          <script type="text/javascript">
+              
+              
+                document.addEventListener("deviceready", onDeviceReady, false);
+          
+                var db;
+ 
+                
+                function onDeviceReady() {
+ 
+                    db = window.openDatabase("Database", "1.0", "Cordova Demo",2*1024*1024);
+                    db.transaction(createDB, errorCB, successCB);
+                    
+                }
+                
+                function createDB(tx){
+                  //  tx.executeSql('DROP TABLE IF EXIST hfu');
+                    tx.executeSql('CREATE TABLE IF NOT EXISTS DEMO (title, image, description)');
+                }
+          function errorCB(err){
+              alert("Error Processing SQL: "+ err.code );
+          }
+          
+          function successCB(){
+              alert("yeeee");
+             
+          }
+          function insertDB(tx){
+              var _title=$("[name='title']").val();
+              var _image=$("[name='image']").val();
+              var _description=$("[name='description']").val();
+              var sql ='INSERT INTO DEMO (title, image, description) VALUES (?,?,?)';
+              tx.executeSql(sql,[_title,_image,_description],sucessQueryDB,errorCB);
+          }
+          
+          function sucessQueryDB(tx){
+             
+              tx.executeSql('SELECT * FROM DEMO', [], renderList, errorCB);
+              
+          }
+          function renderList(tx,results){
+              var htmlstring='';
+              var len = results.rows.length;
+              alert("len :" +len);
+              for(var i=0;i<len;i++){
+                  htmlstring+='<li>' + results.rows.item(i).title + '<br/>' + results.rows.item(i).description  + '</li>'
+              }
+              $('#resultList').html(htmlstring);
+              $('#resultList').listview('refresh');
+              
+          }
+          
+          
+                function submitForm(){
+                    db.transaction(insertDB, errorCB);
+                    $.mobile.changePage("#page2",{reverse:false,transition:"slide"});
+                    return false;
+                }
+          
+                </script>
+    </head>
+    <body>
+        
+        <div data-role="page" id="page1">
+            <div data-role="header">
+                <h1>Form</h1>
+            </div>
+            <div data-role="content">
+                <form method="POST" onsubmit="return submitForm()" id="myForm" data-ajax="false">
+                  
+                  
+                  
+                  <label for="title" class="ui-hidden-accessible">Title</label>
+                  <input name="title" type="text" placeholder="Title">
+                      <br>
+                      
+                <label for="image" class="ui-hidden-accessible">Image</label>
+                <input name="image" type="text" placeholder="image URI">
+                <input name="description" type="text" placeholder="description">
+                    
+                    
+                            <input type="submit" value="Submit">
+                                
+                                </form>
+            </div>
+            
+        </div>
+        
+        <div data-role="page" id="page2" data-add-back-btn="true">
+            <div data-role="header">
+                <h1>Page Two</h1>
+            </div>
+            <div data-role="content">
+                <div id="output">
+                    
+                    </div>
+                    
+                    <ul data-role="listview" id="resultList">
+                    
+                    </ul>
+                </div>
+                
+            </div>
+
+           
+    </body>
+</html>
